@@ -1,7 +1,17 @@
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
 }
+
 canvas {
   display: block;
+}
+
+main {
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 15vh;
+  width: max-content;
+  height: max-content;
 }
