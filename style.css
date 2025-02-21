@@ -1,9 +1,9 @@
-html,
-body {
+html, body {
   margin: 0;
   padding: 0;
+  background-color:#1F1F1F;
+  font-family: monospace;
 }
-
 canvas {
   display: block;
 }
