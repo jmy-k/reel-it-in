@@ -18,10 +18,9 @@ let erasedRulesImage;
 
 let soundEnabled = false;
 
-let gameState = 'rules'; // Possible states: 'rules', 'game', 'scores', 'gameOver'
-let debounceTime = 200; // Debounce duration in ms
+let gameState = 'gameplayRules'; // Possible states: 'rules', 'game', 'scores', 'gameOver'
+let debounceTime = 200;
 let lastStateChange = 0; // Timestamp of the last state change
-
 
 let waitingForInput = false;
 
@@ -29,7 +28,6 @@ let waitingForInput = false;
 let rulesImage;
 let showRules = true;
 let gameStarted = false;
-let keyWasPressed = false;
 
 // Button state tracking from serial
 let button1 = 0, button2 = 0, button3 = 0, button4 = 0;
@@ -72,8 +70,8 @@ let plopSound;
 
 function preload() {
   plopSound = loadSound('plop.wav')
-  rulesImage = loadImage('rulesv3.png');
-  //erasedRulesImage = loadImage('rulesErased.png');
+  rulesImage = loadImage('rulesv4.png');
+  gameplayImage = loadImage("gameplay.png");
 }
 
 function setup() {
@@ -95,11 +93,6 @@ function setup() {
   }
 }
 
-
-
-
-
-
 function removeFish(index) {
   let removedFish = fish[index];
   let fishHead = removedFish.segments[0];
@@ -107,17 +100,29 @@ function removeFish(index) {
   fish.splice(index, 1);
 }
 
-
-
 function buttonPressed() {
   return keyIsDown(81) || keyIsDown(67) || keyIsDown(77) || keyIsDown(80);
 }
-function keyPressed() {
 
-  if (gameState != 'game') {
-    keyWasPressed = true;
+function keyPressed() {
+  if (gameState === "gameplayRules") {
+    gameState = "rules";
+    lastStateChange = millis();
+    return;
   }
-  else if (gameState == 'game' && fish.length > 0) {
+  if (gameState === "rules") {
+    gameState = "game";
+    lastStateChange = millis();
+    resetGame(true);
+    return;
+  }
+  if (gameState === "scores") {
+    gameState = "gameplayRules";
+    lastStateChange = millis();
+    return;
+  }
+
+  if (gameState == 'game' && fish.length > 0) {
     let selectedFish = fish[0];
     let fishType = selectedFish.type;
     let keyPressed = key.toUpperCase();
@@ -160,6 +165,9 @@ function draw() {
   }
 
   switch (gameState) {
+    case "gameplayRules":
+      showGameplayScreen();
+      break;
     case 'rules':
       showRulesScreen();
       break;
@@ -174,6 +182,13 @@ function draw() {
       break;
   }
 }
+
+function showGameplayScreen() {
+  background("#111");
+  imageMode(CENTER);
+  image(gameplayImage, width / 2, height / 2, width - 40, height - 40);
+}
+
 
 function showRulesScreen() {
   background("#111");
@@ -197,7 +212,7 @@ function showRulesScreen() {
   fill(255);
   //text("Press any button to start", width / 2, height - 50);
 
-  if (keyWasPressed) {
+  if (buttonPressed()) {
     lastStateChange = millis();
     gameState = 'game';
     resetGame(true); // Reset the game without awarding fish
@@ -282,11 +297,6 @@ function playGame() {
   // Draw game UI (border, scores, timer, etc.)
   drawBorderUI();
 
-  // // Check for button presses to remove fish
-  // if (!ignoreButtonPresses) {
-  //   checkButtonPresses();
-  // }
-
   // Handle game over condition
   if (fish.length === 0 && !gameOver) {
     gameOver = true;
@@ -353,7 +363,7 @@ function showScoresScreen() {
   text("PRESS ANY KEY TO PLAY AGAIN", width / 2, height - 80);
 
   // Keep original state change logic
-  if (keyWasPressed) {
+  if (buttonPressed()) {
     lastStateChange = millis();
     gameState = 'rules';
   }
@@ -370,17 +380,11 @@ function showGameOverScreen() {
   fill("white");
   text("Press any button to continue", width / 2, height / 2 + 50);
 
-  if (keyWasPressed) {
+  if (buttonPressed()) {
     lastStateChange = millis();
     gameState = 'rules';
   }
 }
-
-
-
-
-
-
 
 // Modify the doubleFish function to handle golden fish reproduction
 function doubleFish() {
@@ -458,8 +462,6 @@ function resetGame(resetRound = false) {
   }
 }
 
-
-
 function displayFinalScores() {
   if (!gameStarted) return;
 
@@ -513,8 +515,6 @@ function displayFinalScores() {
   // Bottom text
   textSize(24);
   fill(255);
-  // textAlign(CENTER, CENTER);
-  //text("PRESS ANY BUTTON TO PLAY AGAIN", width/2, height - 80);
 
   // Keep original state management
   if (button1 === 1 || button2 === 1 || button3 === 1 || button4 === 1) {
@@ -524,8 +524,6 @@ function displayFinalScores() {
     gameOver = false;
   }
 }
-
-
 
 // Ripple class
 class Ripple {
@@ -556,12 +554,6 @@ class Ripple {
     return this.opacity <= 0;
   }
 }
-
-function styleLabel() {
-
-
-}
-
 
 function drawBorderUI() {
   push();
@@ -619,10 +611,6 @@ function drawBorderUI() {
   drawPlayerScore("M:", player2Red, scoreSpacing * 2.5 - spacer, "#FF0000");
   drawPlayerScore("P: ", player3Blue, scoreSpacing * 3.5 - spacer - 10, "#6A6AFF");
 
-
-
-
-
   pop();
 
 }
@@ -630,7 +618,6 @@ function drawBorderUI() {
 
 
 class ScorePopup {
-
   constructor(side, points = 1) {
     this.opacity = 255;
     this.age = 0;
@@ -689,7 +676,6 @@ class ScorePopup {
     noStroke();
 
     translate(this.x, this.y);
-    rotate(this.rotation);
 
     fill(this.color, this.opacity);
 
@@ -704,21 +690,23 @@ class ScorePopup {
 
 
 function awardCooperationPoints() {
-  if (!wasButton1Pressed) {
-    player1Yellow += 2;
-    scorePopups.push(new ScorePopup('yellow', 2));
-  }
-  if (!wasButton2Pressed) {
-    player2Red += 2;
-    scorePopups.push(new ScorePopup('red', 2));
-  }
-  if (!wasButton3Pressed) {
-    player3Blue += 2;
-    scorePopups.push(new ScorePopup('blue', 2));
-  }
-  if (!wasButton4Pressed) {
-    player4Green += 2;
-    scorePopups.push(new ScorePopup('green', 2));
+  if (gameState === "game") {
+    if (!wasButton1Pressed) {
+      player1Yellow += 2;
+      scorePopups.push(new ScorePopup('yellow', 2));
+    }
+    if (!wasButton2Pressed) {
+      player2Red += 2;
+      scorePopups.push(new ScorePopup('red', 2));
+    }
+    if (!wasButton3Pressed) {
+      player3Blue += 2;
+      scorePopups.push(new ScorePopup('blue', 2));
+    }
+    if (!wasButton4Pressed) {
+      player4Green += 2;
+      scorePopups.push(new ScorePopup('green', 2));
+    }
   }
 }
 
