@@ -158,7 +158,6 @@ function keyPressed() {
   }
 }
 
-
 function draw() {
   if (millis() - lastStateChange < debounceTime) {
     return; // Ignore input during debounce
@@ -304,8 +303,6 @@ function playGame() {
     lastStateChange = millis();
   }
 }
-
-
 
 function showScoresScreen() {
   background("#111");
@@ -615,8 +612,6 @@ function drawBorderUI() {
 
 }
 
-
-
 class ScorePopup {
   constructor(side, points = 1) {
     this.opacity = 255;
@@ -687,7 +682,6 @@ class ScorePopup {
     return this.opacity <= 0;
   }
 }
-
 
 function awardCooperationPoints() {
   if (gameState === "game") {
