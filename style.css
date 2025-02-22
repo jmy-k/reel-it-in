@@ -1,9 +1,11 @@
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
-  background-color:#1F1F1F;
+  background-color: #1F1F1F;
   font-family: monospace;
 }
+
 canvas {
   display: block;
 }
@@ -14,4 +16,20 @@ main {
   margin-top: 15vh;
   width: max-content;
   height: max-content;
+}
+
+a {
+  color: #FFFFFF;
+  transition: color 0.5s ease-in-out;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #999999;
+}
+
+#credit {
+  position: fixed;
+  right: 1.5vw;
+  bottom: 2vh;
 }
